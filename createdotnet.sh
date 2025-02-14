@@ -138,3 +138,4 @@ git add .
 git commit -m "Initialize projects with Model, Repository and MVC UI"
 
 echo "Project '$solutionName' created successfully."
+
