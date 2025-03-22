@@ -81,8 +81,11 @@ install_git() {
 # Setup variables
 echo "Setting up variables"
 solutionName="$1"
+databaseName="$1.Database"
 modelName="$1.Models"
 repositoryName="$1.Repository"
+serviceName="$1.Service"
+apiName="$1.Api"
 mvcName="$1.Mvc"
 gitUserEmail="$2"
 gitUserName="$3"
@@ -100,25 +103,35 @@ cd $solutionName
 # Create git repository
 echo "Create git repository"
 dotnet new gitignore
-git init
+git init --initial-branch=gitInitialBranch
 
 # Create the project folders
 echo "Create the project folders"
 
-
-
+mkdir -p -v "$databaseName"
 mkdir -p -v "$modelName"
 mkdir -p -v "$repositoryName"
+mkdir -p -v "$serviceName"
+mkdir -p -v "$apiName"
 mkdir -p -v "$mvcName"
 
 echo "Create the solution"
 dotnet new sln
 
 echo "Create the project for Models"
+dotnet new classlib -lang C# -o $databaseName
+
+echo "Create the project for Models"
 dotnet new classlib -lang C# -o $modelName
 
 echo "Create the project for the Repository"
 dotnet new classlib -lang C# -o $repositoryName
+
+echo "Create the project for the Service"
+dotnet new classlib -lang C# -o $serviceName
+
+echo "Create the project for the Api"
+dotnet new classlib -lang C# -o $apiName
 
 echo "Create the project for the Mvc.Ui"
 dotnet new mvc -lang C# -o $mvcName
@@ -129,12 +142,23 @@ echo "Create build supporting files"
 dotnet new buildprops
 dotnet new buildtargets
 
+dotnet sln add "./$databaseName/$databaseName.csproj"
 dotnet sln add "./$modelName/$modelName.csproj"
 dotnet sln add "./$repositoryName/$repositoryName.csproj"
+dotnet sln add "./$serviceName/$serviceName.csproj"
+dotnet sln add "./$apiName/$apiName.csproj"
 dotnet sln add "./$mvcName/$mvcName.csproj"
 dotnet build
 
 git add .
 git commit -m "Initialize projects with Model, Repository and MVC UI"
 
+echo "Adding Entity Framework Core to the database project"
+cd ./$databaseName/
+dotnet add package Microsoft.EntityFrameworkCore
+#dotnet add package Microsoft.EntityFrameworkCore.SqlServer   # For SQL Server
+dotnet add package Pomelo.EntityFrameworkCore.MySql           # For MySQL
+cd ..
+
 echo "Project '$solutionName' created successfully."
+
