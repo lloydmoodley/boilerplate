@@ -1,5 +1,5 @@
 # boilerplate
-boilerplate code and scripts
+Shell Scripts to create boilerplate code for an ASP.Net Core Application
 
 Create an ASP.Net Core Solution with the following projects:
 * Database
