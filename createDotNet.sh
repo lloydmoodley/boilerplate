@@ -78,8 +78,12 @@ install_git() {
     fi
 }
 
+echo_green() {
+   echo -e "\e[32m$1\e[0m"
+}
+
 # Setup variables
-echo "Setting up variables"
+echo_green "Setting up variables"
 solutionName="$1"
 databaseName="$1.Database"
 modelName="$1.Models"
@@ -96,17 +100,17 @@ check_dotnet_installed
 check_git_installed
 
 # Create the solution folder
-echo "Creating the solution folder"
+echo_green "Creating the solution folder"
 mkdir -p "$solutionName"
 cd $solutionName
 
 # Create git repository
-echo "Create git repository"
+echo_green "Create git repository"
 dotnet new gitignore
 git init --initial-branch=gitInitialBranch
 
 # Create the project folders
-echo "Create the project folders"
+echo_green "Create the project folders"
 
 mkdir -p -v "$databaseName"
 mkdir -p -v "$modelName"
@@ -115,30 +119,30 @@ mkdir -p -v "$serviceName"
 mkdir -p -v "$apiName"
 mkdir -p -v "$mvcName"
 
-echo "Create the solution"
+echo_green "Create the solution"
 dotnet new sln
 
-echo "Create the project for Models"
+echo_green "Create the project for Models"
 dotnet new classlib -lang C# -o $databaseName
 
-echo "Create the project for Models"
+echo_green "Create the project for Models"
 dotnet new classlib -lang C# -o $modelName
 
-echo "Create the project for the Repository"
+echo_green "Create the project for the Repository"
 dotnet new classlib -lang C# -o $repositoryName
 
-echo "Create the project for the Service"
+echo_green "Create the project for the Service"
 dotnet new classlib -lang C# -o $serviceName
 
-echo "Create the project for the Api"
+echo_green "Create the project for the Api"
 dotnet new classlib -lang C# -o $apiName
 
-echo "Create the project for the Mvc.Ui"
+echo_green "Create the project for the Mvc.Ui"
 dotnet new mvc -lang C# -o $mvcName
 dotnet user-secrets init --project $mvcName
 dotnet user-secrets set "ConnectionStrings:localdb" "Server=localhost;Database=$1;User Id=myUsername;Password=myPassword;" --project $mvcName
 
-echo "Create build supporting files"
+echo_green "Create build supporting files"
 dotnet new buildprops
 dotnet new buildtargets
 
@@ -153,12 +157,24 @@ dotnet build
 git add .
 git commit -m "Initialize projects with Model, Repository and MVC UI"
 
-echo "Adding Entity Framework Core to the database project"
-cd ./$databaseName/
+echo_green "Adding Entity Framework Core to the repository project"
+cd ./$repositoryName/
 dotnet add package Microsoft.EntityFrameworkCore
 #dotnet add package Microsoft.EntityFrameworkCore.SqlServer   # For SQL Server
 dotnet add package Pomelo.EntityFrameworkCore.MySql           # For MySQL
+dotnet restore
 cd ..
 
-echo "Project '$solutionName' created successfully."
+git add .
+git commit -m "Add EF to the database project"
+
+echo_green "Update Repository Project. Add a reference to the Models Project"
+cd $repositoryName
+dotnet add reference "../$modelName/$modelName.csproj"
+dotnet restore
+cd ..
+git add .
+git commit -m "Update Repository Project. Add a reference to the Models Project"
+
+echo_green "Project '$solutionName' created successfully."
 
